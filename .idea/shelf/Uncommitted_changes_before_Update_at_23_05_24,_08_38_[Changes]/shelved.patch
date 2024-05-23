@@ -1,0 +1,421 @@
+Index: tictactoe/tic_tac_toe_play.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import tkinter as tk\nfrom tkinter import messagebox\nfrom tic_tac_toe_reinforcement import TicTacToeRL, COMPUTER, HUMAN, EMPTY\n\nclass TicTacToeUI:\n    def __init__(self, master):\n        self.master = master\n        self.master.title(\"Tic Tac Toe\")\n        self.rl_agent = TicTacToeRL()\n        self.board_buttons = []\n        self.bot_moves = 0  # Variable zur Zählung der Bot-Züge\n        self.create_board()\n\n    def create_board(self):\n        for i in range(3):\n            row_buttons = []\n            for j in range(3):\n                button = tk.Button(self.master, text=\"\", width=10, height=5,\n                                   command=lambda row=i, col=j: self.on_click(row, col))\n                button.grid(row=i, column=j)\n                row_buttons.append(button)\n            self.board_buttons.append(row_buttons)\n\n    def on_click(self, row, col):\n        if self.board_buttons[row][col][\"text\"] == \"\":\n            # Menschlicher Zug\n            self.board_buttons[row][col][\"text\"] = HUMAN\n            if self.check_winner(HUMAN):\n                self.show_message(\"Herzlichen Glückwunsch! Sie haben gewonnen!\")\n                self.show_final_board()\n                self.restart()\n                return\n            elif self.is_board_full():\n                self.show_message(\"Unentschieden!\")\n                self.show_final_board()\n                self.restart()\n                return\n\n            # Überprüfen, ob das Spiel noch nicht beendet ist\n            if not self.is_board_full():\n                # Computerzug\n                while True:\n                    computer_row, computer_col = self.rl_agent.q_learning(self.get_board_state())\n                    if self.board_buttons[computer_row][computer_col][\"text\"] == \"\":\n                        self.board_buttons[computer_row][computer_col][\"text\"] = COMPUTER\n                        break\n\n                if self.check_winner(COMPUTER):\n                    self.show_message(\"Der Computer hat gewonnen!\")\n                    self.show_final_board()\n                    self.restart()\n                    return\n                elif self.is_board_full():\n                    self.show_message(\"Unentschieden!\")\n                    self.show_final_board()\n                    self.restart()\n                    return\n\n    def show_final_board(self):\n        board_str = \"\"\n        for i in range(3):\n            for j in range(3):\n                cell_value = self.board_buttons[i][j][\"text\"]\n                if cell_value == \"\":\n                    cell_value = \"-\"\n                board_str += cell_value + \" \"\n            board_str += \"\\n\"\n        self.show_message(\"Endgültiges Spielfeld:\\n\" + board_str)\n\n    def check_winner(self, player):\n        \"\"\"Überprüft, ob ein Spieler gewonnen hat.\"\"\"\n        # Überprüfen der Zeilen und Spalten\n        for i in range(3):\n            if all(self.board_buttons[i][j][\"text\"] == player for j in range(3)):\n                return True\n            if all(self.board_buttons[j][i][\"text\"] == player for j in range(3)):\n                return True\n        # Überprüfen der Diagonalen\n        if all(self.board_buttons[i][i][\"text\"] == player for i in range(3)) or \\\n                all(self.board_buttons[i][2 - i][\"text\"] == player for i in range(3)):\n            return True\n        return False\n\n    def is_board_full(self):\n        # Überprüfen, ob das Spielfeld voll ist\n        return all(self.board_buttons[i][j][\"text\"] in [HUMAN, COMPUTER] for i in range(3) for j in range(3))\n\n    def get_board_state(self):\n        # Rückgabe des aktuellen Spielfeldzustands als Liste oder Array\n        return [[self.board_buttons[i][j][\"text\"] for j in range(3)] for i in range(3)]\n\n    def show_message(self, message):\n        messagebox.showinfo(\"Spiel beendet\", message)\n\n    def restart(self):\n        # Setze das Spielfeld zurück\n        for i in range(3):\n            for j in range(3):\n                self.board_buttons[i][j][\"text\"] = \"\"\n\n\ndef main():\n    root = tk.Tk()\n    tic_tac_toe_ui = TicTacToeUI(root)\n    root.mainloop()\n\nif __name__ == \"__main__\":\n    main()\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/tictactoe/tic_tac_toe_play.py b/tictactoe/tic_tac_toe_play.py
+--- a/tictactoe/tic_tac_toe_play.py	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
++++ b/tictactoe/tic_tac_toe_play.py	(date 1716281756885)
+@@ -1,6 +1,8 @@
+ import tkinter as tk
+ from tkinter import messagebox
+-from tic_tac_toe_reinforcement import TicTacToeRL, COMPUTER, HUMAN, EMPTY
++
++from tic_tac_toe_reinforcement import TicTacToeRL, COMPUTER, HUMAN
++
+ 
+ class TicTacToeUI:
+     def __init__(self, master):
+Index: tictactoe/tic_tac_toe_reinforcement.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import numpy as np\nimport matplotlib.pyplot as plt\nimport random\n\n# Definiere die Spieler\nHUMAN = 'X'\nCOMPUTER = 'O'\nEMPTY = ' '\n\n# Definiere Q-Learning Parameter\nLEARNING_RATE = 0.1\nDISCOUNT_FACTOR = 0.9\nEPSILON = 0.1\n\n\nclass TicTacToeRL:\n    def __init__(self):\n        self.q_values = {}  # Dictionary zum Speichern der Q-Werte\n\n    def get_state_hash(self, board):\n        \"\"\"Erzeugt einen Hash-Wert für den aktuellen Zustand des Spielfelds.\"\"\"\n        return str(np.array(board).reshape(9))\n\n    def q_learning(self, board, epsilon=EPSILON):\n        \"\"\"Führt einen Q-Learning-Schritt für den aktuellen Zustand des Spielfelds durch.\"\"\"\n        state = self.get_state_hash(board)\n        if state not in self.q_values:\n            self.q_values[state] = {}\n        if np.random.rand() < epsilon:\n            # Wähle einen zufälligen Zug\n            available_moves = [(i, j) for i in range(3) for j in range(3) if board[i][j] == EMPTY]\n            if not available_moves:\n                return random.choice([(i, j) for i in range(3) for j in range(3)])\n            action = random.choice(available_moves)\n        else:\n            # Wähle den Zug mit dem höchsten Q-Wert\n            max_q_value = float('-inf')\n            best_action = None\n            for i in range(3):\n                for j in range(3):\n                    if board[i][j] == EMPTY:\n                        next_state = self.get_state_hash(board)\n                        q_value = self.q_values[state].get((i, j), 0)\n                        if q_value > max_q_value:\n                            max_q_value = q_value\n                            best_action = (i, j)\n            if best_action is None:\n                return random.choice([(i, j) for i in range(3) for j in range(3)])\n            action = best_action\n        return action\n\n    def update_q_values(self, state, action, reward, next_state):\n        \"\"\"Aktualisiert die Q-Werte basierend auf dem erhaltenen Reward.\"\"\"\n        if state not in self.q_values:\n            self.q_values[state] = {}\n        if next_state not in self.q_values:\n            self.q_values[next_state] = {}\n        current_q_value = self.q_values[state].get(action, 0)\n        max_next_q_value = max(self.q_values[next_state].values(), default=0)\n        self.q_values[state][action] = current_q_value + LEARNING_RATE * (\n                    reward + DISCOUNT_FACTOR * max_next_q_value - current_q_value)\n\n    def play_game(self):\n        \"\"\"Spielt ein Spiel Tic-Tac-Toe zwischen dem Computer und sich selbst.\"\"\"\n        board = [[EMPTY for _ in range(3)] for _ in range(3)]\n        states = []\n        while True:\n            # Computerzug\n            state = self.get_state_hash(board)\n            action = self.q_learning(board)\n            states.append(state)\n            row, col = action\n            board[row][col] = COMPUTER\n            if self.check_winner(board, COMPUTER):\n                # Belohnung für den Computer, wenn er gewinnt\n                self.update_q_values(states[-1], action, 1, self.get_state_hash(board))\n                break\n            elif self.is_board_full(board):\n                # Belohnung für Unentschieden\n                self.update_q_values(states[-1], action, 0, self.get_state_hash(board))\n                break\n            # Menschlicher Zug\n            row, col = random.choice([(i, j) for i in range(3) for j in range(3) if board[i][j] == EMPTY])\n            board[row][col] = HUMAN\n            if self.check_winner(board, HUMAN):\n                # Bestrafung für den Computer, wenn der Mensch gewinnt\n                self.update_q_values(states[-1], action, -1, self.get_state_hash(board))\n                break\n        return states\n\n    def check_winner(self, board, player):\n        \"\"\"Überprüft, ob ein Spieler gewonnen hat.\"\"\"\n        lines = [[(i, j) for j in range(3)] for i in range(3)] + \\\n                [[(i, j) for i in range(3)] for j in range(3)] + \\\n                [[(i, i) for i in range(3)]] + \\\n                [[(i, 2 - i) for i in range(3)]]\n        for line in lines:\n            if all(board[i][j] == player for i, j in line):\n                return True\n        return False\n\n    def is_board_full(self, board):\n        \"\"\"Überprüft, ob das Spielfeld voll ist.\"\"\"\n        return all(board[i][j] != EMPTY for i in range(3) for j in range(3))\n\n\ndef plot_learning_progress(states):\n    \"\"\"Plottet den Lernfortschritt des Computers.\"\"\"\n    num_states = len(states)\n    computer_moves = [state.count(COMPUTER) for state in states]\n    avg_computer_moves = [sum(computer_moves[:i + 1]) / (i + 1) for i in range(num_states)]\n    plt.plot(range(num_states), avg_computer_moves, color='blue', linewidth=2)\n    plt.xlabel('Spielnummer')\n    plt.ylabel('Durchschnittliche Anzahl der Computer-Züge')\n    plt.title('Lernfortschritt des Computers')\n    plt.xlim(0, 500)  # Nur die ersten 500 Spielnummern anzeigen\n    plt.ylim(0, max(avg_computer_moves) * 1.1)  # Dynamische y-Grenze\n    plt.grid(True)\n    plt.show()\n\n\ndef main():\n    rl_agent = TicTacToeRL()\n    num_games = 2000\n    all_states = []\n    for _ in range(num_games):\n        states = rl_agent.play_game()\n        all_states.extend(states)\n    plot_learning_progress(all_states)\n\n\nif __name__ == \"__main__\":\n    main()\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/tictactoe/tic_tac_toe_reinforcement.py b/tictactoe/tic_tac_toe_reinforcement.py
+--- a/tictactoe/tic_tac_toe_reinforcement.py	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
++++ b/tictactoe/tic_tac_toe_reinforcement.py	(date 1716361200965)
+@@ -1,3 +1,4 @@
++"""Für diese Datei wurde ChatGPT als Hilfsmittel verwendet"""
+ import numpy as np
+ import matplotlib.pyplot as plt
+ import random
+Index: README.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># TicTacToe\n\n1. Tic-Tac-Toe:\n    Tic-Tac-Toe ist ein beliebtes Spiel, das normalerweise auf einem 3x3-Raster gespielt wird.\n    Zwei Spieler, oft als \"X\" und \"O\" bezeichnet, wechseln sich ab, um ihre Symbole in leere Felder        des Rasters zu setzen.\n    Das Ziel ist es, drei Symbole in einer Reihe, Spalte oder Diagonale zu platzieren.\n\n2. Der Code:\n    Der bereitgestellte Code ist eine Python-Implementierung des Tic-Tac-Toe-Spiels.\n    Es gibt eine Funktion play_game(), die das Spiel steuert.\n    Das Spielbrett wird als 3x3-Liste repräsentiert, und die Spieler sind als 'X' (der menschliche         Spieler) und 'O' (der Computer) definiert.\n\n3. Spielablauf:\n    Das Spiel beginnt mit einem leeren Spielbrett.\n    Der menschliche Spieler macht seinen Zug, indem er die Zeile und Spalte seines Zuges eingibt.\n    Dann macht der Computer seinen Zug.\n    Die Züge werden abwechselnd gemacht, bis entweder ein Spieler gewinnt oder das Spiel unentschieden     endet.\n\n4. Gewinnüberprüfung:\n    Nach jedem Zug überprüft der Code, ob einer der Spieler gewonnen hat.\n    Dies geschieht durch Überprüfung aller Reihen, Spalten und Diagonalen auf das Vorhandensein von        drei aufeinanderfolgenden Symbolen des gleichen Spielers.\n\n5. Minimax-Algorithmus:\n    Um den besten Zug für den Computer zu finden, wird der Minimax-Algorithmus verwendet.\n    Dies ist ein algorithmisches Konzept, das darauf abzielt, die bestmöglichen Züge für beide Spieler     zu berechnen, unter der Annahme, dass der Gegner ebenfalls optimal spielt.\n    Der Algorithmus verwendet rekursive Suche und Bewertung, um den besten Zug zu finden.\n\n6. Zufälliger Zug:\n    Um das Spiel interessanter zu gestalten, gibt es eine zufällige Komponente im Code.\n    Manchmal, wenn der Computer seinen Zug macht, entscheidet er sich zufällig für einen Zug anstatt       den besten Zug zu berechnen.\n    Dies fügt dem Spiel eine gewisse Unvorhersehbarkeit hinzu. -> tic_tac_toe_interesting.py\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/README.md b/README.md
+--- a/README.md	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
++++ b/README.md	(date 1716280588282)
+@@ -1,31 +1,36 @@
+ # TicTacToe
+ 
+ 1. Tic-Tac-Toe:
+-    Tic-Tac-Toe ist ein beliebtes Spiel, das normalerweise auf einem 3x3-Raster gespielt wird.
+-    Zwei Spieler, oft als "X" und "O" bezeichnet, wechseln sich ab, um ihre Symbole in leere Felder        des Rasters zu setzen.
+-    Das Ziel ist es, drei Symbole in einer Reihe, Spalte oder Diagonale zu platzieren.
++   Tic-Tac-Toe ist ein beliebtes Spiel, das normalerweise auf einem 3x3-Raster gespielt wird.
++   Zwei Spieler, oft als "X" und "O" bezeichnet, wechseln sich ab, um ihre Symbole in leere Felder des Rasters zu
++   setzen.
++   Das Ziel ist es, drei Symbole in einer Reihe, Spalte oder Diagonale zu platzieren.
+ 
+ 2. Der Code:
+-    Der bereitgestellte Code ist eine Python-Implementierung des Tic-Tac-Toe-Spiels.
+-    Es gibt eine Funktion play_game(), die das Spiel steuert.
+-    Das Spielbrett wird als 3x3-Liste repräsentiert, und die Spieler sind als 'X' (der menschliche         Spieler) und 'O' (der Computer) definiert.
++   Der bereitgestellte Code ist eine Python-Implementierung des Tic-Tac-Toe-Spiels.
++   Es gibt eine Funktion play_game(), die das Spiel steuert.
++   Das Spielbrett wird als 3x3-Liste repräsentiert, und die Spieler sind als 'X' (der menschliche Spieler) und 'O' (der
++   Computer) definiert.
+ 
+ 3. Spielablauf:
+-    Das Spiel beginnt mit einem leeren Spielbrett.
+-    Der menschliche Spieler macht seinen Zug, indem er die Zeile und Spalte seines Zuges eingibt.
+-    Dann macht der Computer seinen Zug.
+-    Die Züge werden abwechselnd gemacht, bis entweder ein Spieler gewinnt oder das Spiel unentschieden     endet.
++   Das Spiel beginnt mit einem leeren Spielbrett.
++   Der menschliche Spieler macht seinen Zug, indem er die Zeile und Spalte seines Zuges eingibt.
++   Dann macht der Computer seinen Zug.
++   Die Züge werden abwechselnd gemacht, bis entweder ein Spieler gewinnt oder das Spiel unentschieden endet.
+ 
+ 4. Gewinnüberprüfung:
+-    Nach jedem Zug überprüft der Code, ob einer der Spieler gewonnen hat.
+-    Dies geschieht durch Überprüfung aller Reihen, Spalten und Diagonalen auf das Vorhandensein von        drei aufeinanderfolgenden Symbolen des gleichen Spielers.
++   Nach jedem Zug überprüft der Code, ob einer der Spieler gewonnen hat.
++   Dies geschieht durch Überprüfung aller Reihen, Spalten und Diagonalen auf das Vorhandensein von drei
++   aufeinanderfolgenden Symbolen des gleichen Spielers.
+ 
+ 5. Minimax-Algorithmus:
+-    Um den besten Zug für den Computer zu finden, wird der Minimax-Algorithmus verwendet.
+-    Dies ist ein algorithmisches Konzept, das darauf abzielt, die bestmöglichen Züge für beide Spieler     zu berechnen, unter der Annahme, dass der Gegner ebenfalls optimal spielt.
+-    Der Algorithmus verwendet rekursive Suche und Bewertung, um den besten Zug zu finden.
++   Um den besten Zug für den Computer zu finden, wird der Minimax-Algorithmus verwendet.
++   Dies ist ein algorithmisches Konzept, das darauf abzielt, die bestmöglichen Züge für beide Spieler zu berechnen,
++   unter der Annahme, dass der Gegner ebenfalls optimal spielt.
++   Der Algorithmus verwendet rekursive Suche und Bewertung, um den besten Zug zu finden.
+ 
+ 6. Zufälliger Zug:
+-    Um das Spiel interessanter zu gestalten, gibt es eine zufällige Komponente im Code.
+-    Manchmal, wenn der Computer seinen Zug macht, entscheidet er sich zufällig für einen Zug anstatt       den besten Zug zu berechnen.
+-    Dies fügt dem Spiel eine gewisse Unvorhersehbarkeit hinzu. -> tic_tac_toe_interesting.py
++   Um das Spiel interessanter zu gestalten, gibt es eine zufällige Komponente im Code.
++   Manchmal, wenn der Computer seinen Zug macht, entscheidet er sich zufällig für einen Zug anstatt den besten Zug zu
++   berechnen.
++   Dies fügt dem Spiel eine gewisse Unvorhersehbarkeit hinzu. -> tic_tac_toe_interesting.py
+Index: tictactoe/tic_tac_toe_bot_endgame.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import random\n\n# Definiere die Spieler\nHUMAN = 'X'\nCOMPUTER = 'O'\n\n\ndef print_board(board):\n    \"\"\"Druckt das Tic-Tac-Toe-Spielbrett.\"\"\"\n    for row in board:\n        print(\" | \".join(row))\n        print(\"-\" * 9)\n\n\ndef available_moves(board):\n    \"\"\"Gibt eine Liste der verfügbaren Züge zurück.\"\"\"\n    moves = []\n    for i in range(3):\n        for j in range(3):\n            if board[i][j] == ' ':\n                moves.append((i, j))\n    return moves\n\n\ndef check_winner(board, player):\n    \"\"\"Überprüft, ob ein Spieler gewonnen hat.\"\"\"\n    for row in board:\n        if all(cell == player for cell in row):\n            return True\n    for col in range(3):\n        if all(board[row][col] == player for row in range(3)):\n            return True\n    if all(board[i][i] == player for i in range(3)) or all(board[i][2 - i] == player for i in range(3)):\n        return True\n    return False\n\n\ndef evaluate(board):\n    \"\"\"Bewertet den Zustand des Bretts für den MiniMax-Algorithmus.\"\"\"\n    if check_winner(board, COMPUTER):\n        return 1\n    elif check_winner(board, HUMAN):\n        return -1\n    else:\n        return 0\n\n\ndef minimax(board, depth, maximizing_player):\n    \"\"\"Minimax-Algorithmus zur Ermittlung des besten Zugs.\"\"\"\n    if check_winner(board, COMPUTER):\n        return 1\n    if check_winner(board, HUMAN):\n        return -1\n    if not available_moves(board):\n        return 0\n\n    if maximizing_player:\n        max_eval = float('-inf')\n        for move in available_moves(board):\n            row, col = move\n            board[row][col] = COMPUTER\n            eval = minimax(board, depth + 1, False)\n            board[row][col] = ' '\n            max_eval = max(max_eval, eval)\n        return max_eval\n    else:\n        min_eval = float('inf')\n        for move in available_moves(board):\n            row, col = move\n            board[row][col] = HUMAN\n            eval = minimax(board, depth + 1, True)\n            board[row][col] = ' '\n            min_eval = min(min_eval, eval)\n        return min_eval\n\n\ndef best_move(board):\n    \"\"\"Gibt den besten Zug für den Computer zurück.\"\"\"\n    best_score = float('-inf')\n    best_move = None\n    for move in available_moves(board):\n        row, col = move\n        board[row][col] = COMPUTER\n        score = minimax(board, 0, False)\n        board[row][col] = ' '\n        if score > best_score:\n            best_score = score\n            best_move = move\n    return best_move\n\n\ndef play_game():\n    \"\"\"Startet ein neues Spiel.\"\"\"\n    board = [[' ' for _ in range(3)] for _ in range(3)]\n    print(\"Willkommen beim Tic-Tac-Toe Chatbot-Spiel!\")\n    print_board(board)\n    while True:\n        # Benutzerzug\n        row, col = map(int, input(\"Geben Sie Zeile und Spalte (0-2) für Ihren Zug ein (z.B. 1 2): \").split())\n        if board[row][col] == ' ':\n            board[row][col] = HUMAN\n        else:\n            print(\"Ungültiger Zug. Das Feld ist bereits belegt.\")\n            continue\n        print_board(board)\n        if check_winner(board, HUMAN):\n            print(\"Herzlichen Glückwunsch! Sie haben gewonnen!\")\n            break\n        elif ' ' not in [cell for row in board for cell in row]:\n            print(\"Unentschieden!\")\n            break\n        # Computerzug\n        print(\"Der Bot denkt...\")\n        row, col = best_move(board)\n        board[row][col] = COMPUTER\n        print_board(board)\n        if check_winner(board, COMPUTER):\n            print(\"Der Bot hat gewonnen!\")\n            break\n\n\nif __name__ == \"__main__\":\n    play_game()
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/tictactoe/tic_tac_toe_bot_endgame.py b/tictactoe/tic_tac_toe_bot_endgame.py
+--- a/tictactoe/tic_tac_toe_bot_endgame.py	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
++++ b/tictactoe/tic_tac_toe_bot_endgame.py	(date 1716281756888)
+@@ -1,5 +1,3 @@
+-import random
+-
+ # Definiere die Spieler
+ HUMAN = 'X'
+ COMPUTER = 'O'
+Index: .idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_12_09_[Changes]/shelved.patch
+===================================================================
+diff --git a/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_12_09_[Changes]/shelved.patch b/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_12_09_[Changes]/shelved.patch
+deleted file mode 100644
+--- a/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_12_09_[Changes]/shelved.patch	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
++++ /dev/null	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
+@@ -1,18 +0,0 @@
+-Index: .idea/.gitignore
+-IDEA additional info:
+-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+-<+>UTF-8
+-===================================================================
+-diff --git a/.idea/.gitignore b/.idea/.gitignore
+-new file mode 100644
+---- /dev/null	(date 1715335508385)
+-+++ b/.idea/.gitignore	(date 1715335508385)
+-@@ -0,0 +1,8 @@
+-+# Default ignored files
+-+/shelf/
+-+/workspace.xml
+-+# Editor-based HTTP Client requests
+-+/httpRequests/
+-+# Datasource local storage ignored files
+-+/dataSources/
+-+/dataSources.local.xml
+Index: .idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__12_05__Changes_.xml
+===================================================================
+diff --git a/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__12_05__Changes_.xml b/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__12_05__Changes_.xml
+deleted file mode 100644
+--- a/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__12_05__Changes_.xml	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
++++ /dev/null	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
+@@ -1,4 +0,0 @@
+-<changelist name="Uncommitted_changes_before_Update_at_10_05_24,_12_05_[Changes]" date="1715335508401" recycled="true" deleted="true">
+-  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_12_05_[Changes]/shelved.patch" />
+-  <option name="DESCRIPTION" value="Uncommitted changes before Update at 10.05.24, 12:05 [Changes]" />
+-</changelist>
+\ No newline at end of file
+Index: .idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_12_05_[Changes]/shelved.patch
+===================================================================
+diff --git a/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_12_05_[Changes]/shelved.patch b/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_12_05_[Changes]/shelved.patch
+deleted file mode 100644
+--- a/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_12_05_[Changes]/shelved.patch	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
++++ /dev/null	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
+@@ -1,18 +0,0 @@
+-Index: .idea/.gitignore
+-IDEA additional info:
+-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+-<+>UTF-8
+-===================================================================
+-diff --git a/.idea/.gitignore b/.idea/.gitignore
+-new file mode 100644
+---- /dev/null	(date 1715327438959)
+-+++ b/.idea/.gitignore	(date 1715327438959)
+-@@ -0,0 +1,8 @@
+-+# Default ignored files
+-+/shelf/
+-+/workspace.xml
+-+# Editor-based HTTP Client requests
+-+/httpRequests/
+-+# Datasource local storage ignored files
+-+/dataSources/
+-+/dataSources.local.xml
+Index: .idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__12_09__Changes_.xml
+===================================================================
+diff --git a/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__12_09__Changes_.xml b/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__12_09__Changes_.xml
+deleted file mode 100644
+--- a/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__12_09__Changes_.xml	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
++++ /dev/null	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
+@@ -1,4 +0,0 @@
+-<changelist name="Uncommitted_changes_before_Update_at_10_05_24,_12_09_[Changes]" date="1715335744279" recycled="true" deleted="true">
+-  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_12_09_[Changes]/shelved.patch" />
+-  <option name="DESCRIPTION" value="Uncommitted changes before Update at 10.05.24, 12:09 [Changes]" />
+-</changelist>
+\ No newline at end of file
+Index: .idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__09_50__Changes_.xml
+===================================================================
+diff --git a/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__09_50__Changes_.xml b/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__09_50__Changes_.xml
+deleted file mode 100644
+--- a/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__09_50__Changes_.xml	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
++++ /dev/null	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
+@@ -1,4 +0,0 @@
+-<changelist name="Uncommitted_changes_before_Update_at_10_05_24,_09_50_[Changes]" date="1715327438985" recycled="true" deleted="true">
+-  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_09_50_[Changes]/shelved.patch" />
+-  <option name="DESCRIPTION" value="Uncommitted changes before Update at 10.05.24, 09:50 [Changes]" />
+-</changelist>
+\ No newline at end of file
+Index: .idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_09_50_[Changes]/shelved.patch
+===================================================================
+diff --git a/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_09_50_[Changes]/shelved.patch b/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_09_50_[Changes]/shelved.patch
+deleted file mode 100644
+--- a/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_09_50_[Changes]/shelved.patch	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
++++ /dev/null	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
+@@ -1,18 +0,0 @@
+-Index: .idea/.gitignore
+-IDEA additional info:
+-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+-<+>UTF-8
+-===================================================================
+-diff --git a/.idea/.gitignore b/.idea/.gitignore
+-new file mode 100644
+---- /dev/null	(date 1715327134118)
+-+++ b/.idea/.gitignore	(date 1715327134118)
+-@@ -0,0 +1,8 @@
+-+# Default ignored files
+-+/shelf/
+-+/workspace.xml
+-+# Editor-based HTTP Client requests
+-+/httpRequests/
+-+# Datasource local storage ignored files
+-+/dataSources/
+-+/dataSources.local.xml
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"AutoImportSettings\">\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\n  </component>\n  <component name=\"ChangeListManager\">\n    <list default=\"true\" id=\"2d48bc38-2719-4013-89b6-33a48440c395\" name=\"Changes\" comment=\"42\">\n      <change afterPath=\"$PROJECT_DIR$/.idea/.gitignore\" afterDir=\"false\" />\n    </list>\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\n  </component>\n  <component name=\"Git.Settings\">\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\n  </component>\n  <component name=\"GitHubPullRequestSearchHistory\">{\n  &quot;lastFilter&quot;: {\n    &quot;state&quot;: &quot;OPEN&quot;,\n    &quot;assignee&quot;: &quot;stheinz&quot;\n  }\n}</component>\n  <component name=\"GithubPullRequestsUISettings\">{\n  &quot;selectedUrlAndAccountId&quot;: {\n    &quot;url&quot;: &quot;https://github.com/stheinz/project1.git&quot;,\n    &quot;accountId&quot;: &quot;dcf28717-6ab2-4fbc-93a4-3113c95a86ee&quot;\n  }\n}</component>\n  <component name=\"ProjectColorInfo\">{\n  &quot;associatedIndex&quot;: 8\n}</component>\n  <component name=\"ProjectId\" id=\"2gGc05Yuh9jiLbLatPXqu2gsxJm\" />\n  <component name=\"ProjectLevelVcsManager\">\n    <ConfirmationsSetting value=\"2\" id=\"Add\" />\n  </component>\n  <component name=\"ProjectViewState\">\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\n    <option name=\"showLibraryContents\" value=\"true\" />\n  </component>\n  <component name=\"PropertiesComponent\"><![CDATA[{\n  \"keyToString\": {\n    \"ASKED_ADD_EXTERNAL_FILES\": \"true\",\n    \"ASKED_SHARE_PROJECT_CONFIGURATION_FILES\": \"true\",\n    \"Python.test.executor\": \"Run\",\n    \"Python.tic_tac_toe_bot.executor\": \"Run\",\n    \"Python.tic_tac_toe_bot_endgame.executor\": \"Run\",\n    \"Python.tic_tac_toe_interesting.executor\": \"Run\",\n    \"Python.tic_tac_toe_play.executor\": \"Run\",\n    \"Python.tic_tac_toe_reinforcement.executor\": \"Run\",\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\n    \"git-widget-placeholder\": \"main\",\n    \"last_opened_file_path\": \"/Users/maebo/Documents/Programming/Weiterbildung/project1\",\n    \"node.js.detected.package.eslint\": \"true\",\n    \"node.js.detected.package.tslint\": \"true\",\n    \"node.js.selected.package.eslint\": \"(autodetect)\",\n    \"node.js.selected.package.tslint\": \"(autodetect)\",\n    \"nodejs_package_manager_path\": \"npm\",\n    \"vue.rearranger.settings.migration\": \"true\"\n  }\n}]]></component>\n  <component name=\"SharedIndexes\">\n    <attachedChunks>\n      <set>\n        <option value=\"bundled-js-predefined-1d06a55b98c1-91d5c284f522-JavaScript-PY-241.15989.155\" />\n        <option value=\"bundled-python-sdk-babbdf50b680-7c6932dee5e4-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.15989.155\" />\n      </set>\n    </attachedChunks>\n  </component>\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\n  <component name=\"TaskManager\">\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\n      <changelist id=\"2d48bc38-2719-4013-89b6-33a48440c395\" name=\"Changes\" comment=\"\" />\n      <created>1715327129051</created>\n      <option name=\"number\" value=\"Default\" />\n      <option name=\"presentableId\" value=\"Default\" />\n      <updated>1715327129051</updated>\n      <workItem from=\"1715327130078\" duration=\"2726000\" />\n      <workItem from=\"1715335447544\" duration=\"614000\" />\n    </task>\n    <task id=\"LOCAL-00001\" summary=\"42\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1715335630588</created>\n      <option name=\"number\" value=\"00001\" />\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1715335630588</updated>\n    </task>\n    <task id=\"LOCAL-00002\" summary=\"42\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1715335729586</created>\n      <option name=\"number\" value=\"00002\" />\n      <option name=\"presentableId\" value=\"LOCAL-00002\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1715335729586</updated>\n    </task>\n    <option name=\"localTasksCounter\" value=\"3\" />\n    <servers />\n  </component>\n  <component name=\"TypeScriptGeneratedFilesManager\">\n    <option name=\"version\" value=\"3\" />\n  </component>\n  <component name=\"VcsManagerConfiguration\">\n    <option name=\"ADD_EXTERNAL_FILES_SILENTLY\" value=\"true\" />\n    <MESSAGE value=\"42\" />\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"42\" />\n  </component>\n  <component name=\"com.intellij.coverage.CoverageDataManagerImpl\">\n    <SUITE FILE_PATH=\"coverage/project1$tic_tac_toe_bot_endgame.coverage\" NAME=\"tic_tac_toe_bot_endgame Coverage Results\" MODIFIED=\"1715335562782\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"false\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$/tictactoe\" />\n    <SUITE FILE_PATH=\"coverage/project1$tic_tac_toe_reinforcement.coverage\" NAME=\"tic_tac_toe_reinforcement Coverage Results\" MODIFIED=\"1715335574372\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"false\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$/tictactoe\" />\n    <SUITE FILE_PATH=\"coverage/project1$test.coverage\" NAME=\"test Coverage Results\" MODIFIED=\"1715335542568\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"false\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$/tictactoe\" />\n    <SUITE FILE_PATH=\"coverage/project1$tic_tac_toe_interesting.coverage\" NAME=\"tic_tac_toe_interesting Coverage Results\" MODIFIED=\"1715335565874\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"false\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$/tictactoe\" />\n    <SUITE FILE_PATH=\"coverage/project1$tic_tac_toe_play.coverage\" NAME=\"tic_tac_toe_play Coverage Results\" MODIFIED=\"1715335568815\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"false\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$/tictactoe\" />\n    <SUITE FILE_PATH=\"coverage/project1$tic_tac_toe_bot.coverage\" NAME=\"tic_tac_toe_bot Coverage Results\" MODIFIED=\"1715335550268\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"false\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$/tictactoe\" />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
++++ b/.idea/workspace.xml	(date 1716446149156)
+@@ -5,7 +5,20 @@
+   </component>
+   <component name="ChangeListManager">
+     <list default="true" id="2d48bc38-2719-4013-89b6-33a48440c395" name="Changes" comment="42">
+-      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/project1.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/tic-tac-toe.iml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_09_50_[Changes]/shelved.patch" beforeDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_12_05_[Changes]/shelved.patch" beforeDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_12_09_[Changes]/shelved.patch" beforeDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__09_50__Changes_.xml" beforeDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__12_05__Changes_.xml" beforeDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__12_09__Changes_.xml" beforeDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/tictactoe/tic_tac_toe_bot_endgame.py" beforeDir="false" afterPath="$PROJECT_DIR$/tictactoe/tic_tac_toe_bot_endgame.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/tictactoe/tic_tac_toe_play.py" beforeDir="false" afterPath="$PROJECT_DIR$/tictactoe/tic_tac_toe_play.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/tictactoe/tic_tac_toe_reinforcement.py" beforeDir="false" afterPath="$PROJECT_DIR$/tictactoe/tic_tac_toe_reinforcement.py" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -13,6 +26,11 @@
+     <option name="LAST_RESOLUTION" value="IGNORE" />
+   </component>
+   <component name="Git.Settings">
++    <option name="RECENT_BRANCH_BY_REPOSITORY">
++      <map>
++        <entry key="$PROJECT_DIR$" value="main" />
++      </map>
++    </option>
+     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+   </component>
+   <component name="GitHubPullRequestSearchHistory">{
+@@ -38,27 +56,27 @@
+     <option name="hideEmptyMiddlePackages" value="true" />
+     <option name="showLibraryContents" value="true" />
+   </component>
+-  <component name="PropertiesComponent"><![CDATA[{
+-  "keyToString": {
+-    "ASKED_ADD_EXTERNAL_FILES": "true",
+-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+-    "Python.test.executor": "Run",
+-    "Python.tic_tac_toe_bot.executor": "Run",
+-    "Python.tic_tac_toe_bot_endgame.executor": "Run",
+-    "Python.tic_tac_toe_interesting.executor": "Run",
+-    "Python.tic_tac_toe_play.executor": "Run",
+-    "Python.tic_tac_toe_reinforcement.executor": "Run",
+-    "RunOnceActivity.ShowReadmeOnStart": "true",
+-    "git-widget-placeholder": "main",
+-    "last_opened_file_path": "/Users/maebo/Documents/Programming/Weiterbildung/project1",
+-    "node.js.detected.package.eslint": "true",
+-    "node.js.detected.package.tslint": "true",
+-    "node.js.selected.package.eslint": "(autodetect)",
+-    "node.js.selected.package.tslint": "(autodetect)",
+-    "nodejs_package_manager_path": "npm",
+-    "vue.rearranger.settings.migration": "true"
++  <component name="PropertiesComponent">{
++  &quot;keyToString&quot;: {
++    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
++    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
++    &quot;Python.test.executor&quot;: &quot;Run&quot;,
++    &quot;Python.tic_tac_toe_bot.executor&quot;: &quot;Run&quot;,
++    &quot;Python.tic_tac_toe_bot_endgame.executor&quot;: &quot;Run&quot;,
++    &quot;Python.tic_tac_toe_interesting.executor&quot;: &quot;Run&quot;,
++    &quot;Python.tic_tac_toe_play.executor&quot;: &quot;Run&quot;,
++    &quot;Python.tic_tac_toe_reinforcement.executor&quot;: &quot;Run&quot;,
++    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
++    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
++    &quot;last_opened_file_path&quot;: &quot;/Users/maebo/Documents/Programming/Weiterbildung/tic-tac-toe&quot;,
++    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
++    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
++    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
++    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
++    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
++    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+   }
+-}]]></component>
++}</component>
+   <component name="SharedIndexes">
+     <attachedChunks>
+       <set>
+@@ -77,6 +95,14 @@
+       <updated>1715327129051</updated>
+       <workItem from="1715327130078" duration="2726000" />
+       <workItem from="1715335447544" duration="614000" />
++      <workItem from="1715340206433" duration="575000" />
++      <workItem from="1715348334899" duration="4331000" />
++      <workItem from="1715581992938" duration="618000" />
++      <workItem from="1716279789133" duration="1309000" />
++      <workItem from="1716281153598" duration="1417000" />
++      <workItem from="1716283217418" duration="10740000" />
++      <workItem from="1716300817055" duration="11830000" />
++      <workItem from="1716445681336" duration="467000" />
+     </task>
+     <task id="LOCAL-00001" summary="42">
+       <option name="closed" value="true" />
+@@ -94,7 +120,23 @@
+       <option name="project" value="LOCAL" />
+       <updated>1715335729586</updated>
+     </task>
+-    <option name="localTasksCounter" value="3" />
++    <task id="LOCAL-00003" summary="42">
++      <option name="closed" value="true" />
++      <created>1715340230201</created>
++      <option name="number" value="00003" />
++      <option name="presentableId" value="LOCAL-00003" />
++      <option name="project" value="LOCAL" />
++      <updated>1715340230201</updated>
++    </task>
++    <task id="LOCAL-00004" summary="42">
++      <option name="closed" value="true" />
++      <created>1715340262403</created>
++      <option name="number" value="00004" />
++      <option name="presentableId" value="LOCAL-00004" />
++      <option name="project" value="LOCAL" />
++      <updated>1715340262403</updated>
++    </task>
++    <option name="localTasksCounter" value="5" />
+     <servers />
+   </component>
+   <component name="TypeScriptGeneratedFilesManager">
+@@ -106,11 +148,15 @@
+     <option name="LAST_COMMIT_MESSAGE" value="42" />
+   </component>
+   <component name="com.intellij.coverage.CoverageDataManagerImpl">
++    <SUITE FILE_PATH="coverage/tic_tac_toe$tic_tac_toe_bot.coverage" NAME="tic_tac_toe_bot Coverage Results" MODIFIED="1716300819331" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
+     <SUITE FILE_PATH="coverage/project1$tic_tac_toe_bot_endgame.coverage" NAME="tic_tac_toe_bot_endgame Coverage Results" MODIFIED="1715335562782" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
+-    <SUITE FILE_PATH="coverage/project1$tic_tac_toe_reinforcement.coverage" NAME="tic_tac_toe_reinforcement Coverage Results" MODIFIED="1715335574372" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
++    <SUITE FILE_PATH="coverage/project1$tic_tac_toe_reinforcement.coverage" NAME="tic_tac_toe_reinforcement Coverage Results" MODIFIED="1715348659060" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
+     <SUITE FILE_PATH="coverage/project1$test.coverage" NAME="test Coverage Results" MODIFIED="1715335542568" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
++    <SUITE FILE_PATH="coverage/tic_tac_toe$tic_tac_toe_bot_endgame.coverage" NAME="tic_tac_toe_bot_endgame Coverage Results" MODIFIED="1716300826967" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
++    <SUITE FILE_PATH="coverage/tic_tac_toe$tic_tac_toe_reinforcement.coverage" NAME="tic_tac_toe_reinforcement Coverage Results" MODIFIED="1716300832247" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
+     <SUITE FILE_PATH="coverage/project1$tic_tac_toe_interesting.coverage" NAME="tic_tac_toe_interesting Coverage Results" MODIFIED="1715335565874" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
+-    <SUITE FILE_PATH="coverage/project1$tic_tac_toe_play.coverage" NAME="tic_tac_toe_play Coverage Results" MODIFIED="1715335568815" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
+-    <SUITE FILE_PATH="coverage/project1$tic_tac_toe_bot.coverage" NAME="tic_tac_toe_bot Coverage Results" MODIFIED="1715335550268" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
++    <SUITE FILE_PATH="coverage/project1$tic_tac_toe_play.coverage" NAME="tic_tac_toe_play Coverage Results" MODIFIED="1715348558885" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
++    <SUITE FILE_PATH="coverage/project1$tic_tac_toe_bot.coverage" NAME="tic_tac_toe_bot Coverage Results" MODIFIED="1715348517197" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
++    <SUITE FILE_PATH="coverage/tic_tac_toe$tic_tac_toe_interesting.coverage" NAME="tic_tac_toe_interesting Coverage Results" MODIFIED="1716300844273" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
+   </component>
+ </project>
+\ No newline at end of file
+Index: .idea/modules.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"ProjectModuleManager\">\n    <modules>\n      <module fileurl=\"file://$PROJECT_DIR$/.idea/project1.iml\" filepath=\"$PROJECT_DIR$/.idea/project1.iml\" />\n    </modules>\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/modules.xml b/.idea/modules.xml
+--- a/.idea/modules.xml	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
++++ b/.idea/modules.xml	(date 1716281222235)
+@@ -2,7 +2,7 @@
+ <project version="4">
+   <component name="ProjectModuleManager">
+     <modules>
+-      <module fileurl="file://$PROJECT_DIR$/.idea/project1.iml" filepath="$PROJECT_DIR$/.idea/project1.iml" />
++      <module fileurl="file://$PROJECT_DIR$/.idea/tic-tac-toe.iml" filepath="$PROJECT_DIR$/.idea/tic-tac-toe.iml" />
+     </modules>
+   </component>
+ </project>
+\ No newline at end of file
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"ProjectRootManager\" version=\"2\" project-jdk-name=\"Python 3.12\" project-jdk-type=\"Python SDK\" />\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision 05db08d3072c3f7d34cbd5ba88f7584c4ed928be)
++++ b/.idea/misc.xml	(date 1716280588591)
+@@ -1,4 +1,7 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
++  <component name="Black">
++    <option name="sdkName" value="Python 3.12" />
++  </component>
+   <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.12" project-jdk-type="Python SDK" />
+ </project>
+\ No newline at end of file
+diff --git a/.idea/project1.iml b/.idea/tic-tac-toe.iml
+rename from .idea/project1.iml
+rename to .idea/tic-tac-toe.iml

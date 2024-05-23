@@ -5,7 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2d48bc38-2719-4013-89b6-33a48440c395" name="Changes" comment="42">
-      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/project1.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/tic-tac-toe.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_09_50_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_12_05_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24,_12_09_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__09_50__Changes_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__12_05__Changes_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_05_24__12_09__Changes_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tictactoe/tic_tac_toe_bot_endgame.py" beforeDir="false" afterPath="$PROJECT_DIR$/tictactoe/tic_tac_toe_bot_endgame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tictactoe/tic_tac_toe_play.py" beforeDir="false" afterPath="$PROJECT_DIR$/tictactoe/tic_tac_toe_play.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tictactoe/tic_tac_toe_reinforcement.py" beforeDir="false" afterPath="$PROJECT_DIR$/tictactoe/tic_tac_toe_reinforcement.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -13,6 +26,11 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -38,27 +56,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "Python.test.executor": "Run",
-    "Python.tic_tac_toe_bot.executor": "Run",
-    "Python.tic_tac_toe_bot_endgame.executor": "Run",
-    "Python.tic_tac_toe_interesting.executor": "Run",
-    "Python.tic_tac_toe_play.executor": "Run",
-    "Python.tic_tac_toe_reinforcement.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "/Users/maebo/Documents/Programming/Weiterbildung/project1",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Python.test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tic_tac_toe_bot.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tic_tac_toe_bot_endgame.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tic_tac_toe_interesting.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tic_tac_toe_play.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tic_tac_toe_reinforcement.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/maebo/Documents/Programming/Weiterbildung/tic-tac-toe&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -77,6 +95,14 @@
       <updated>1715327129051</updated>
       <workItem from="1715327130078" duration="2726000" />
       <workItem from="1715335447544" duration="614000" />
+      <workItem from="1715340206433" duration="575000" />
+      <workItem from="1715348334899" duration="4331000" />
+      <workItem from="1715581992938" duration="618000" />
+      <workItem from="1716279789133" duration="1309000" />
+      <workItem from="1716281153598" duration="1417000" />
+      <workItem from="1716283217418" duration="10740000" />
+      <workItem from="1716300817055" duration="11830000" />
+      <workItem from="1716445681336" duration="772000" />
     </task>
     <task id="LOCAL-00001" summary="42">
       <option name="closed" value="true" />
@@ -94,11 +120,38 @@
       <option name="project" value="LOCAL" />
       <updated>1715335729586</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="42">
+      <option name="closed" value="true" />
+      <created>1715340230201</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1715340230201</updated>
+    </task>
+    <task id="LOCAL-00004" summary="42">
+      <option name="closed" value="true" />
+      <created>1715340262403</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1715340262403</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
@@ -106,11 +159,16 @@
     <option name="LAST_COMMIT_MESSAGE" value="42" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/tic_tac_toe$tic_tac_toe_bot.coverage" NAME="tic_tac_toe_bot Coverage Results" MODIFIED="1716446040165" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
     <SUITE FILE_PATH="coverage/project1$tic_tac_toe_bot_endgame.coverage" NAME="tic_tac_toe_bot_endgame Coverage Results" MODIFIED="1715335562782" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
-    <SUITE FILE_PATH="coverage/project1$tic_tac_toe_reinforcement.coverage" NAME="tic_tac_toe_reinforcement Coverage Results" MODIFIED="1715335574372" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
+    <SUITE FILE_PATH="coverage/project1$tic_tac_toe_reinforcement.coverage" NAME="tic_tac_toe_reinforcement Coverage Results" MODIFIED="1715348659060" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
     <SUITE FILE_PATH="coverage/project1$test.coverage" NAME="test Coverage Results" MODIFIED="1715335542568" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
+    <SUITE FILE_PATH="coverage/tic_tac_toe$tic_tac_toe_bot_endgame.coverage" NAME="tic_tac_toe_bot_endgame Coverage Results" MODIFIED="1716446086032" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
+    <SUITE FILE_PATH="coverage/tic_tac_toe$tic_tac_toe_reinforcement.coverage" NAME="tic_tac_toe_reinforcement Coverage Results" MODIFIED="1716446170583" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
     <SUITE FILE_PATH="coverage/project1$tic_tac_toe_interesting.coverage" NAME="tic_tac_toe_interesting Coverage Results" MODIFIED="1715335565874" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
-    <SUITE FILE_PATH="coverage/project1$tic_tac_toe_play.coverage" NAME="tic_tac_toe_play Coverage Results" MODIFIED="1715335568815" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
-    <SUITE FILE_PATH="coverage/project1$tic_tac_toe_bot.coverage" NAME="tic_tac_toe_bot Coverage Results" MODIFIED="1715335550268" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
+    <SUITE FILE_PATH="coverage/project1$tic_tac_toe_play.coverage" NAME="tic_tac_toe_play Coverage Results" MODIFIED="1715348558885" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
+    <SUITE FILE_PATH="coverage/tic_tac_toe$tic_tac_toe_play.coverage" NAME="tic_tac_toe_play Coverage Results" MODIFIED="1716446148125" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
+    <SUITE FILE_PATH="coverage/project1$tic_tac_toe_bot.coverage" NAME="tic_tac_toe_bot Coverage Results" MODIFIED="1715348517197" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
+    <SUITE FILE_PATH="coverage/tic_tac_toe$tic_tac_toe_interesting.coverage" NAME="tic_tac_toe_interesting Coverage Results" MODIFIED="1716446115828" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tictactoe" />
   </component>
 </project>

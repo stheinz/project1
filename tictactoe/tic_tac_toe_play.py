@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
-from tic_tac_toe_reinforcement import TicTacToeRL, COMPUTER, HUMAN, EMPTY
+
+from tic_tac_toe_reinforcement import TicTacToeRL, COMPUTER, HUMAN
+
 
 class TicTacToeUI:
     def __init__(self, master):

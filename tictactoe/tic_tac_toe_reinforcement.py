@@ -1,3 +1,4 @@
+"""Für diese Datei wurde ChatGPT als Hilfsmittel verwendet"""
 import numpy as np
 import matplotlib.pyplot as plt
 import random

@@ -1,5 +1,3 @@
-import random
-
 # Definiere die Spieler
 HUMAN = 'X'
 COMPUTER = 'O'
